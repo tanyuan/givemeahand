@@ -1,0 +1,161 @@
+module givemeahand(
+  clk,
+  reset,
+  
+  //VCC,
+  RST,
+  MISO,
+  MOSI,
+  SCK,
+  SDA,
+  
+  //BT
+  Rx,
+  Rx1,
+  //Tx,
+  Send,
+  isServer,
+  
+  HEX0,
+  HEX1,
+  HEX2,
+  HEX3,
+  HEX4,
+  HEX5,
+  HEX6,
+  HEX7,
+  LED,
+  LED2,
+  LED3,
+  //for audio
+  MCLK,
+  I2C_SCLK,
+  I2C_SDAT,
+  BCLK,     //bit-stream clk from codec
+	ADCLRCK,  
+	DACLRCK, 
+	ADCDAT,
+	DACDAT,
+
+	record, //switch on when recording
+	ADDR,   //sram's address 20bits
+	DQ,     //sram's DQ 16bits
+	CE_n,   //sram's control signal
+	OE_n,   //sram's control signal
+	WE_n,   //sram's control signal
+	UB_n,   //sram's control signal
+	LB_n    //sram's control signal
+);
+
+//==== in/out declaration ==================================
+    //-------- input ---------------------------------------
+	input clk;
+	input reset;
+	//BT
+	input Send;
+	input isServer;
+	//input Tx;
+	//RFID
+	input MISO;
+	
+  input BCLK;
+  input ADCLRCK;
+  input DACLRCK;
+  
+  input ADCDAT;
+ 
+  input record;  
+  inout [15:0] DQ;
+    //-------- output -------------------------------------- 
+	//output VCC;
+	//output GND;
+	output RST;
+	 //for SPI communication
+	output MOSI;
+	output SCK;
+	output SDA;
+	//BT
+	output Rx;
+	output Rx1;
+	
+	output [6:0] HEX0;
+	output [6:0] HEX1;
+	output [6:0] HEX2;
+	output [6:0] HEX3;
+	output [6:0] HEX4;
+	output [6:0] HEX5;
+	output [6:0] HEX6;
+	output [6:0] HEX7;	
+	output [7:0] LED;
+	output [9:0] LED2;
+  output [7:0] LED3;
+	
+  output MCLK;
+  output I2C_SCLK;
+  output I2C_SDAT;
+  output DACDAT;
+  
+  output CE_n;
+  output OE_n;
+  output WE_n;
+  output UB_n;
+  output LB_n;
+
+  output [19:0] ADDR;
+  
+ 
+ 
+/* ==== combinational part ================================== */
+    
+  // clock signal
+  clksrc1M clksrc1 (clk, clk_16); 	 
+
+	RFID rfid(.clk(clk),
+            .reset(reset),
+  
+            //VCC,
+            .RST(RST),
+            .MISO(MISO),
+            .MOSI(MOSI),
+            .SCK(SCK),
+            .SDA(SDA),
+
+            //BT
+            .Rx(Rx),
+            .Rx1(Rx1),
+            //Tx,
+            .Send(Send),
+            .isServer(isServer),
+            
+            .HEX0(HEX0),
+            .HEX1(HEX1),
+            .HEX2(HEX2),
+            .HEX3(HEX3),
+            .HEX4(HEX4),
+            .HEX5(HEX5),
+            .HEX6(HEX6),
+            .HEX7(HEX7),
+            .LED(LED),
+            .LED2(LED2),
+            .LED3(LED3),
+            //for audio
+            .MCLK(MCLK),
+            .I2C_SCLK(I2C_SCLK),
+            .I2C_SDAT(I2C_SDAT),
+            .BCLK(BCLK),     //bit-stream clk from codec
+	          .ADCLRCK(ADCLRCK),  
+	          .DACLRCK(DACLRCK), 
+	          .ADCDAT(ADCDAT),
+	          .DACDAT(DACDAT),
+
+	          .record(record), //switch on when recording
+	          .ADDR(ADDR),   //sram's address 20bits
+	          .DQ(DQ),     //sram's DQ 16bits
+	          .CE_n(CE_n),   //sram's control signal
+	          .OE_n(OE_n),   //sram's control signal
+	          .WE_n(WE_n),   //sram's control signal
+	          .UB_n(UB_n),   //sram's control signal
+	          .LB_n(LB_n)    //sram's control signal
+);
+
+endmodule

@@ -1,0 +1,5 @@
+PLL_Name	clksrc500k:clksrc1|altpll:altpll_component|clksrc500k_altpll:auto_generated|pll1
+PLLJITTER	30
+PLLSPEmax	84
+PLLSPEmin	-53
+

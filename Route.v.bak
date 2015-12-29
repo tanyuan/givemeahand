@@ -1,0 +1,194 @@
+module Route(
+    clk,
+    reset,
+    start,
+    done,
+    rfid_data,
+    rfid_info,
+    record,
+    SRAM_ADDR,
+    SRAM_DQ,
+    SRAM_CE_N,
+    SRAM_LB_N,
+    SRAM_OE_N,
+    SRAM_UB_N,
+    SRAM_WE_N,
+    LED
+);
+
+// Format of RFID information in SRAM
+// ==================================
+// Truncate 32-bit RFID card number (rfid_data) into last (least) 16-bit,
+// and replace the last (least) 4 bits with stimulation information.
+//
+// Example:
+//
+// The original RFID card number: 32'hC4243351
+// The same card stored in SRAM:  {12'h335+4'h2}
+
+  input clk;
+  input reset;
+  input start;
+  input [31:0] rfid_data;
+  input record;
+  output done;
+  output [3:0] rfid_info;
+
+  output LED;
+
+  // SRAM ////////////////////////////
+  output [19:0] SRAM_ADDR;  
+  inout  [15:0] SRAM_DQ;
+  output        SRAM_CE_N;
+  output        SRAM_LB_N;
+  output        SRAM_OE_N;
+  output        SRAM_UB_N;
+  output        SRAM_WE_N;
+
+  reg    [19:0] SRAM_ADDR;  
+  reg           SRAM_CE_N;
+  reg           SRAM_LB_N;
+  reg           SRAM_OE_N;
+  reg           SRAM_UB_N;
+  reg           SRAM_WE_N;
+
+  reg    [19:0] next_SRAM_ADDR;  
+  reg           next_SRAM_CE_N;
+  reg           next_SRAM_LB_N;
+  reg           next_SRAM_OE_N;
+  reg           next_SRAM_UB_N;
+  reg           next_SRAM_WE_N;
+
+  reg LED;
+  reg next_LED;
+
+  reg [4:0] read_state;
+  reg [4:0] next_read_state;
+  reg [4:0] write_state;
+  reg [4:0] next_write_state;
+
+  reg done;
+  reg next_done;
+
+  reg [3:0] rfid_info;
+  reg [3:0] next_rfid_info;
+
+  wire [15:0] SRAM_DQ_OUT;
+
+  parameter id1 = 32'hC4243351;
+  parameter id2 = 32'h0E8A3E4E;
+
+  assign SRAM_DQ = record ? SRAM_DQ_OUT : 16'bz;
+  assign SRAM_DQ_OUT = SRAM_DQ_REG;
+
+  always@(*) begin
+    next_LED = LED;
+    // Read from SRAM //////////////////////////////
+    if (record == 1'b0) begin
+      case(read_state)
+        5'd0: begin
+          if (start == 1'b1)
+            next_read_state = 5'd1;
+          else
+            next_read_state = 5'd0;
+        end
+        5'd1: begin
+          next_done = 1'b0;
+          next_SRAM_CE_N = 1'b0;
+          next_SRAM_OE_N = 1'b0;
+          next_SRAM_WE_N = 1'b1;
+          next_SRAM_ADDR = 20'b0;
+          next_read_state = 5'd2;
+        end
+        5'd2: begin
+          // Find through all SRAM address
+          if (SRAM_DQ[15:4] == rfid_data[15:4]) begin
+            next_state = 5'd3;
+          end
+          else begin
+            if (SRAM_ADDR == 20'b1111_1111_1111_1111_1111)
+              next_read_state = 5'd4;
+            else
+              next_SRAM_ADDR = SRAM_ADDR + 1'b1;
+          end
+        end
+        5'd3: begin
+          // Found the id in SRAM
+          next_LED = 1'b1;
+          next_done = 1'b1;
+          next_rfid_info = SRAM_DQ[3:0];
+          next_read_state = 5'd0;
+        end
+        5'd4: begin
+          // Didn't find the id in SRAM
+          next_done = 1'b1;
+          next_rfid_info = 4'h0;
+          next_read_state = 5'd0;
+        end
+      endcase
+    end
+    // Write to SRAM /////////////////////////////////
+    else begin
+      case (write_state)
+        5'd0: begin
+          if (start == 1'b1)
+            next_write_state = 5'd1;
+          else
+            next_write_state = 5'd0;
+        end
+        5'd1: begin
+          next_done = 1'b0;
+          next_SRAM_ADDR = 20'b0;
+          next_SRAM_CE_N = 1'b0;
+          next_SRAM_OE_N = 1'b1;
+          next_SRAM_WE_N = 1'b0;
+          next_write_state = 5'd2;
+        end
+        5'd2: begin
+          next_SRAM_DQ_REG = {id1[15:4], 4'h1};
+          next_SRAM_ADDR = SRAM_ADDR + 1'b1;
+          next_write_state = 5'd3;
+          end
+        end
+        5'd3: begin
+          next_SRAM_DQ_REG = {id2[15:4], 4'h2};
+          next_write_state = 5'd4;
+        end
+        5'd4: begin
+          next_done = 1'b1;
+          next_write_state = 5'd4;
+        end
+      endcase
+    end
+  end
+
+  always@(posedge clk or posedge reset) begin
+    if (reset == 1'b1) begin
+      read_state  <= 5'd0;
+      write_state <= 5'd0;
+      done        <= 1'b0;
+      rfid_info   <= 4'h0;
+      SRAM_ADDR   <= 20'b0; 
+      SRAM_CE_N   <= 1'b1;
+      SRAM_OE_N   <= 1'b1;
+      SRAM_WE_N   <= 1'b1;
+      SRAM_LB_N   <= 1'b0;
+      SRAM_UB_N   <= 1'b0;
+      LED         <= 1'b0;
+    end
+    else begin
+      read_state  <= next_read_state;
+      write_state <= next_write_state;
+      done        <= next_done;
+      rfid_info   <= next_rfid_info;
+      SRAM_ADDR   <= next_SRAM_ADDR;
+      SRAM_CE_N   <= next_SRAM_CE_N;
+      SRAM_LB_N   <= next_SRAM_LB_N;
+      SRAM_OE_N   <= next_SRAM_OE_N;
+      SRAM_UB_N   <= next_SRAM_UB_N;
+      SRAM_WE_N   <= next_SRAM_WE_N;
+      LED         <= next_LED;
+    end
+  end
+
+endmodule

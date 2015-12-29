@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Mon Jun 29 04:49:41 2015
+Quartus II 64-Bit Version : 13.1.0 Build 162 10/23/2013 SJ Full Version
+Revision Name : RFID
+Top-level Entity Name : RFID
+Family : Cyclone IV E
+Total logic elements : 776
+    Total combinational functions : 640
+    Dedicated logic registers : 366
+Total registers : 366
+Total pins : 143
+Total virtual pins : 0
+Total memory bits : 0
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 1

@@ -1,0 +1,14 @@
+Partition Merge Status : Successful - Sun Jul 05 00:01:23 2015
+Quartus II 64-Bit Version : 13.1.0 Build 162 10/23/2013 SJ Full Version
+Revision Name : givemeahand
+Top-level Entity Name : givemeahand
+Family : Cyclone IV E
+Total logic elements : 3,218
+    Total combinational functions : 2,887
+    Dedicated logic registers : 1,167
+Total registers : 1167
+Total pins : 189
+Total virtual pins : 0
+Total memory bits : 768
+Embedded Multiplier 9-bit elements : 6
+Total PLLs : 1

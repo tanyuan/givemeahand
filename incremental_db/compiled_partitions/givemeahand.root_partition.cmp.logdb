@@ -1,0 +1,3 @@
+v1
+PORT_SWAPPING,PORT_SWAP_TYPE_DSPMULT,Distance:distance1|lpm_mult:Mult0|mult_dft:auto_generated|mac_mult3,
+PORT_SWAPPING,PORT_SWAP_TYPE_DSPMULT,Distance:distance2|lpm_mult:Mult0|mult_dft:auto_generated|mac_mult3,

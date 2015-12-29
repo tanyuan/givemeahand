@@ -1,0 +1,175 @@
+
+State Machine - |givemeahand|IR:ir|state
+Name state.IDLE state.DATAREAD state.GUIDANCE 
+state.IDLE 0 0 0 
+state.GUIDANCE 1 0 1 
+state.DATAREAD 1 1 0 
+
+State Machine - |givemeahand|Temperature:temperature|temp_state
+Name temp_state.111 temp_state.110 temp_state.101 temp_state.100 temp_state.011 temp_state.010 temp_state.001 temp_state.000 
+temp_state.000 0 0 0 0 0 0 0 0 
+temp_state.001 0 0 0 0 0 0 1 1 
+temp_state.010 0 0 0 0 0 1 0 1 
+temp_state.011 0 0 0 0 1 0 0 1 
+temp_state.100 0 0 0 1 0 0 0 1 
+temp_state.101 0 0 1 0 0 0 0 1 
+temp_state.110 0 1 0 0 0 0 0 1 
+temp_state.111 1 0 0 0 0 0 0 1 
+
+State Machine - |givemeahand|Route:route|record_state
+Name record_state.00 record_state.10 record_state.01 
+record_state.00 0 0 0 
+record_state.01 1 0 1 
+record_state.10 1 1 0 
+
+State Machine - |givemeahand|Route:route|write_state
+Name write_state.00110 write_state.00101 write_state.00100 write_state.00011 write_state.00010 write_state.00001 write_state.00000 
+write_state.00000 0 0 0 0 0 0 0 
+write_state.00001 0 0 0 0 0 1 1 
+write_state.00010 0 0 0 0 1 0 1 
+write_state.00011 0 0 0 1 0 0 1 
+write_state.00100 0 0 1 0 0 0 1 
+write_state.00101 0 1 0 0 0 0 1 
+write_state.00110 1 0 0 0 0 0 1 
+
+State Machine - |givemeahand|Route:route|read_state
+Name read_state.00011 read_state.00010 read_state.00001 read_state.00000 
+read_state.00000 0 0 0 0 
+read_state.00001 0 0 1 1 
+read_state.00010 0 1 0 1 
+read_state.00011 1 0 0 1 
+
+State Machine - |givemeahand|Route:route|init_state
+Name init_state.00000 init_state.00010 init_state.00001 
+init_state.00000 0 0 0 
+init_state.00001 1 0 1 
+init_state.00010 1 1 0 
+
+State Machine - |givemeahand|Route:route|state
+Name state.INIT state.WRITE state.READ 
+state.READ 0 0 0 
+state.INIT 1 0 1 
+state.WRITE 0 1 1 
+
+State Machine - |givemeahand|RFID:rfid|antiState
+Name antiState.000001 antiState.000000 antiState.000101 antiState.000010 
+antiState.000000 0 0 0 0 
+antiState.000001 1 1 0 0 
+antiState.000010 0 1 0 1 
+antiState.000101 0 1 1 0 
+
+State Machine - |givemeahand|RFID:rfid|prevState
+Name prevState.0000 prevState.0100 prevState.0011 
+prevState.0000 0 0 0 
+prevState.0011 1 0 1 
+prevState.0100 1 1 0 
+
+State Machine - |givemeahand|RFID:rfid|status
+Name status.00 status.10 status.01 
+status.10 0 0 0 
+status.01 0 1 1 
+status.00 1 1 0 
+
+State Machine - |givemeahand|RFID:rfid|cmd
+Name cmd.00001100 cmd.00000000 cmd.00001110 
+cmd.00000000 0 0 0 
+cmd.00001100 1 1 0 
+cmd.00001110 0 1 1 
+
+State Machine - |givemeahand|RFID:rfid|cmdTagState
+Name cmdTagState.110011 cmdTagState.110010 cmdTagState.101000 cmdTagState.100111 cmdTagState.100110 cmdTagState.100101 cmdTagState.100100 cmdTagState.100011 cmdTagState.100010 cmdTagState.100001 cmdTagState.100000 cmdTagState.011111 cmdTagState.011110 cmdTagState.011101 cmdTagState.011100 cmdTagState.011011 cmdTagState.011010 cmdTagState.011001 cmdTagState.011000 cmdTagState.010111 cmdTagState.010110 cmdTagState.010101 cmdTagState.010100 cmdTagState.010011 cmdTagState.010010 cmdTagState.010001 cmdTagState.010000 cmdTagState.001111 cmdTagState.001110 cmdTagState.001100 cmdTagState.001011 cmdTagState.001010 cmdTagState.001001 cmdTagState.001000 cmdTagState.000111 cmdTagState.000110 cmdTagState.000101 cmdTagState.000100 cmdTagState.000011 cmdTagState.000010 cmdTagState.000001 cmdTagState.000000 
+cmdTagState.000000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+cmdTagState.000001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 
+cmdTagState.000010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 
+cmdTagState.000011 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 
+cmdTagState.000100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 
+cmdTagState.000101 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 
+cmdTagState.000110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 
+cmdTagState.000111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 
+cmdTagState.001000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 
+cmdTagState.001001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 
+cmdTagState.001010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.001011 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.001100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.001110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.001111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010011 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010101 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010110 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.010111 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011001 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011010 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011011 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011101 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011110 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.011111 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100000 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100001 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100010 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100011 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100100 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100101 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100110 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.100111 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.101000 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.110010 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+cmdTagState.110011 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |givemeahand|RFID:rfid|reqState
+Name reqState.000101 reqState.000100 reqState.000011 reqState.000010 reqState.000001 reqState.000000 
+reqState.000000 0 0 0 0 0 0 
+reqState.000001 0 0 0 0 1 1 
+reqState.000010 0 0 0 1 0 1 
+reqState.000011 0 0 1 0 0 1 
+reqState.000100 0 1 0 0 0 1 
+reqState.000101 1 0 0 0 0 1 
+
+State Machine - |givemeahand|RFID:rfid|initState
+Name initState.1011 initState.1010 initState.1001 initState.1000 initState.0111 initState.0110 initState.0101 initState.0100 initState.0011 initState.0010 initState.0001 initState.0000 
+initState.0000 0 0 0 0 0 0 0 0 0 0 0 0 
+initState.0001 0 0 0 0 0 0 0 0 0 0 1 1 
+initState.0010 0 0 0 0 0 0 0 0 0 1 0 1 
+initState.0011 0 0 0 0 0 0 0 0 1 0 0 1 
+initState.0100 0 0 0 0 0 0 0 1 0 0 0 1 
+initState.0101 0 0 0 0 0 0 1 0 0 0 0 1 
+initState.0110 0 0 0 0 0 1 0 0 0 0 0 1 
+initState.0111 0 0 0 0 1 0 0 0 0 0 0 1 
+initState.1000 0 0 0 1 0 0 0 0 0 0 0 1 
+initState.1001 0 0 1 0 0 0 0 0 0 0 0 1 
+initState.1010 0 1 0 0 0 0 0 0 0 0 0 1 
+initState.1011 1 0 0 0 0 0 0 0 0 0 0 1 
+
+State Machine - |givemeahand|RFID:rfid|state
+Name state.010 state.000 state.100 state.011 
+state.000 0 0 0 0 
+state.010 1 1 0 0 
+state.011 0 1 0 1 
+state.100 0 1 1 0 
+
+State Machine - |givemeahand|RFID:rfid|ReadFromReg:rfr|state
+Name state.0111 state.0110 state.0101 state.0100 state.0011 state.0010 state.0001 state.0000 
+state.0000 0 0 0 0 0 0 0 0 
+state.0001 0 0 0 0 0 0 1 1 
+state.0010 0 0 0 0 0 1 0 1 
+state.0011 0 0 0 0 1 0 0 1 
+state.0100 0 0 0 1 0 0 0 1 
+state.0101 0 0 1 0 0 0 0 1 
+state.0110 0 1 0 0 0 0 0 1 
+state.0111 1 0 0 0 0 0 0 1 
+
+State Machine - |givemeahand|RFID:rfid|WriteToReg:wtr|state
+Name state.0111 state.0110 state.0101 state.0100 state.0011 state.0010 state.0001 state.0000 
+state.0000 0 0 0 0 0 0 0 0 
+state.0001 0 0 0 0 0 0 1 1 
+state.0010 0 0 0 0 0 1 0 1 
+state.0011 0 0 0 0 1 0 0 1 
+state.0100 0 0 0 1 0 0 0 1 
+state.0101 0 0 1 0 0 0 0 1 
+state.0110 0 1 0 0 0 0 0 1 
+state.0111 1 0 0 0 0 0 0 1 

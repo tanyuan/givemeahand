@@ -1,0 +1,1238 @@
+// Top State
+`define INITIAL       3'b000
+`define TEST          3'b001
+`define COMMANDTAG    3'b010
+`define REQUESTTAG    3'b011
+`define ANTICOLLISION 3'b100
+`define WRITETOBT     3'b101
+
+//status
+`define MI_OK       2'b00
+`define MI_NOTAGERR 2'b01
+`define MI_ERR      2'b10
+
+
+`define     MAX_LEN               5'd16      // Maximum length of an array.
+// MF522 Command word
+`define     MFRC522_IDLE          8'h00      // NO action; Cancel the current command
+`define     MFRC522_MEM           8'h01      // Store 25 byte into the internal buffer.
+`define     MFRC522_GENID         8'h02      // Generates a 10 byte random ID number.
+`define     MFRC522_CALCCRC       8'h03      // CRC Calculate or selftest.
+`define     MFRC522_TRANSMIT      8'h04      // Transmit data
+`define     MFRC522_NOCMDCH       8'h07      // No command change.
+`define     MFRC522_RECEIVE       8'h08      // Receive Data
+`define     MFRC522_TRANSCEIVE    8'h0C      // Transmit and receive data,
+`define     MFRC522_AUTHENT       8'h0E      // Authentication Key
+`define     MFRC522_SOFTRESET     8'h0F      // Reset
+
+// Mifare_One tag command word
+`define     MF1_REQIDL            8'h26      // find the antenna area does not enter hibernation
+`define     MF1_REQALL            8'h52      // find all the tags antenna area
+`define     MF1_ANTICOLL          8'h93      // anti-collision
+`define     MF1_SELECTTAG         8'h93      // election tag
+`define     MF1_AUTHENT1A         8'h60      // authentication key A
+`define     MF1_AUTHENT1B         8'h61      // authentication key B
+`define     MF1_READ              8'h30      // Read Block
+`define     MF1_WRITE             8'hA0      // write block
+`define     MF1_DECREMENT         8'hC0      // debit
+`define     MF1_INCREMENT         8'hC1      // recharge
+`define     MF1_RESTORE           8'hC2      // transfer block data to the buffer
+`define     MF1_TRANSFER          8'hB0      // save the data in the buffer
+`define     MF1_HALT              8'h50      // Sleep
+
+
+//------------------ MFRC522 registers---------------
+//Page 0:Command and Status
+`define     Reserved00            8'h00
+`define     CommandReg            8'h01
+`define     CommIEnReg            8'h02
+`define     DivIEnReg             8'h03
+`define     CommIrqReg            8'h04
+`define     DivIrqReg             8'h05
+`define     ErrorReg              8'h06
+`define     Status1Reg            8'h07
+`define     Status2Reg            8'h08
+`define     FIFODataReg           8'h09
+`define     FIFOLevelReg          8'h0A
+`define     WaterLevelReg         8'h0B
+`define     ControlReg            8'h0C
+`define     BitFramingReg         8'h0D
+`define     CollReg               8'h0E
+`define     Reserved01            8'h0F
+//Page 1:Command
+`define     Reserved10            8'h10
+`define     ModeReg               8'h11
+`define     TxModeReg             8'h12
+`define     RxModeReg             8'h13
+`define     TxControlReg          8'h14
+`define     TxAutoReg             8'h15
+`define     TxSelReg              8'h16
+`define     RxSelReg              8'h17
+`define     RxThresholdReg        8'h18
+`define     DemodReg              8'h19
+`define     Reserved11            8'h1A
+`define     Reserved12            8'h1B
+`define     MifareReg             8'h1C
+`define     Reserved13            8'h1D
+`define     Reserved14            8'h1E
+`define     SerialSpeedReg        8'h1F
+//Page 2:CFG
+`define     Reserved20            8'h20
+`define     CRCResultRegM         8'h21
+`define     CRCResultRegL         8'h22
+`define     Reserved21            8'h23
+`define     ModWidthReg           8'h24
+`define     Reserved22            8'h25
+`define     RFCfgReg              8'h26
+`define     GsNReg                8'h27
+`define     CWGsPReg              8'h28
+`define     ModGsPReg             8'h29
+`define     TModeReg              8'h2A
+`define     TPrescalerReg         8'h2B
+`define     TReloadRegH           8'h2C
+`define     TReloadRegL           8'h2D
+`define     TCounterValueRegH     8'h2E
+`define     TCounterValueRegL     8'h2F
+//Page 3:TestRegister
+`define     Reserved30            8'h30
+`define     TestSel1Reg           8'h31
+`define     TestSel2Reg           8'h32
+`define     TestPinEnReg          8'h33
+`define     TestPinValueReg       8'h34
+`define     TestBusReg            8'h35
+`define     AutoTestReg           8'h36
+`define     VersionReg            8'h37
+`define     AnalogTestReg         8'h38
+`define     TestDAC1Reg           8'h39
+`define     TestDAC2Reg           8'h3A
+`define     TestADCReg            8'h3B
+`define     Reserved31            8'h3C
+`define     Reserved32            8'h3D
+`define     Reserved33            8'h3E
+`define     Reserved34            8'h3F
+
+module RFID(
+  clk,
+  reset,
+  
+  //VCC,
+  RST,
+  MISO,
+  MOSI,
+  SCK,
+  SDA,
+  
+  //BT
+  Rx,
+  Rx1,
+  //Tx,
+  Send,
+  isServer,
+  
+  HEX0,
+  HEX1,
+  HEX2,
+  HEX3,
+  HEX4,
+  HEX5,
+  HEX6,
+  HEX7,
+  LED,
+  LED2,
+  LED3,
+  //for audio
+   MCLK,
+   I2C_SCLK,
+   I2C_SDAT,
+   BCLK,     //bit-stream clk from codec
+    ADCLRCK,  
+    DACLRCK, 
+    ADCDAT,
+    DACDAT,
+
+    record, //switch on when recording
+    ADDR,   //sram's address 20bits
+    DQ,     //sram's DQ 16bits
+    CE_n,   //sram's control signal
+    OE_n,   //sram's control signal
+    WE_n,   //sram's control signal
+    UB_n,   //sram's control signal
+    LB_n    //sram's control signal
+);
+//==== in/out declaration ==================================
+    //-------- input ---------------------------------------
+    input clk;
+    input reset;
+    //BT
+    input Send;
+    input isServer;
+    //input Tx;
+    //RFID
+    input MISO;
+    
+  input BCLK;
+  input ADCLRCK;
+  input DACLRCK;
+  
+  input ADCDAT;
+ 
+  input record;  
+  inout [15:0] DQ;
+  //-------- output -------------------------------------- 
+  //output VCC;
+  //output GND;
+  output RST;
+   //for SPI communication
+  output MOSI;
+  output SCK;
+  output SDA;
+  //BT
+  output Rx;
+  output Rx1;
+  
+  output [6:0] HEX0;
+  output [6:0] HEX1;
+  output [6:0] HEX2;
+  output [6:0] HEX3;
+  output [6:0] HEX4;
+  output [6:0] HEX5;
+  output [6:0] HEX6;
+  output [6:0] HEX7;  
+  output [7:0] LED;
+  output [9:0] LED2;
+  output [7:0] LED3;
+    
+  output MCLK;
+  output I2C_SCLK;
+  output I2C_SDAT;
+  output DACDAT;
+  
+  output CE_n;
+  output OE_n;
+  output WE_n;
+  output UB_n;
+  output LB_n;
+  
+  output [19:0] ADDR;
+  
+  wire MCLK;
+  wire I2C_SCLK;
+  wire I2C_SDAT;
+  wire DACDAT;
+  wire CE_n;
+  wire OE_n;
+  wire WE_n;
+  wire UB_n;
+  wire LB_n; 
+  wire [19:0] ADDR;
+    
+//==== reg/wire declaration ================================
+  //-------- output --------------------------------------    
+  reg [6:0] HEX0;
+  reg [6:0] HEX1;
+  reg [6:0] HEX2;
+  reg [6:0] HEX3;
+  reg [6:0] HEX4;
+  reg [6:0] HEX5;
+  reg [6:0] HEX6;
+  reg [6:0] HEX7;
+  reg [7:0] LED;
+  reg [9:0] LED2;
+  reg [7:0] LED3;
+     
+  reg [6:0] HEX0_w;
+  reg [6:0] HEX1_w;
+  reg [6:0] HEX2_w;
+  reg [6:0] HEX3_w;
+  reg [6:0] HEX4_w;
+  reg [6:0] HEX5_w;
+  reg [6:0] HEX6_w;
+  reg [6:0] HEX7_w;  
+  reg [7:0] LED_w;
+  reg [9:0] LED2_w;
+  reg [7:0] LED3_w;
+  //-------- wires ---------------------------------------
+    
+    
+  wire SCK;
+  wire SDA;
+  wire MOSI;
+  
+  wire [7:0] initData [15:0];
+  //for WriteToReg
+  wire wtrDone;
+  wire wtrMOSI;
+  wire wtrSCK;
+  wire wtrSDA;
+  //for ReamFromReg
+  wire rfrDone;
+  wire [7:0] rfrData;
+  wire rfrMOSI;
+  wire rfrSCK;
+  wire rfrSDA;
+    
+  wire [16:0] clks_w;
+  //-------- flip-flops ----------------------------------
+  //for count seconds
+  reg [16:0] clks;
+  reg  [3:0] countdown; 
+  
+  reg [3:0] countdown_w;
+   
+  reg [2:0] state;
+  reg [3:0] initState;
+  reg [5:0] reqState;
+  reg [7:0] count;
+
+
+
+
+
+
+
+
+  //for WriteToReg
+  reg       wtrStart;
+  reg [7:0] wtrAddr;
+  reg [7:0] wtrData;
+  //for ReamFromReg
+  reg       rfrStart;
+  reg [7:0] rfrAddr;
+   
+  //parameter for commandTag
+  reg [5:0] cmdTagState;
+  reg [7:0] cmd;
+  reg [7:0] data[`MAX_LEN - 5'd1:0];
+  reg [7:0] dlen;
+  reg [7:0] rlen;
+  reg [1:0] status;
+   
+  reg [7:0] irqEn;
+  reg [7:0] waitIRq;
+  reg [7:0] lastBits;
+  reg [7:0] n;
+  reg [3:0] prevState;
+  
+  //parameter for anticoLLISION
+  reg [5:0] antiState;
+  reg [7:0] checksum;
+  //BT
+  reg [4:0] BTstate;
+  reg [2:0] BTscount;
+  reg [2:0] BTbcount;
+  reg Rx;
+  reg Rx1;
+  
+  reg play;
+  //   -------- flip-flops for next state-----------------------
+  reg [2:0] state_w;
+  reg [3:0] initState_w;
+  reg [5:0] reqState_w;
+  reg [7:0] count_w;
+  
+  
+  //for WriteToReg
+  reg       wtrStart_w;
+  reg [7:0] wtrAddr_w;
+  reg [7:0] wtrData_w;
+  //for ReamFromReg
+  reg       rfrStart_w;
+  reg [7:0] rfrAddr_w;
+  //for parameter for commandTag
+  reg [5:0] cmdTagState_w;
+  reg [7:0] cmd_w;
+  reg [7:0] data_w[`MAX_LEN - 5'd1:0];
+  reg [7:0] dlen_w;
+  reg [7:0] rlen_w;
+  reg [1:0] status_w;
+   
+  reg [7:0] irqEn_w;
+  reg [7:0] waitIRq_w; 
+  reg [7:0] lastBits_w;
+  reg [7:0] n_w;
+  reg [3:0] prevState_w;
+  //parameter for anticoLLISION
+  reg [5:0] antiState_w;  
+  reg [7:0] checksum_w;   
+  //BT
+  reg [4:0] BTstate_w;
+  reg [2:0] BTscount_w;
+  reg [2:0] BTbcount_w;
+  reg Rx_w;
+  reg Rx1_w;
+  
+reg play_w;
+//==== combinational part ==================================
+    
+    // clock signal
+     
+    WriteToReg  wtr(.clk(clk), .reset(reset), .start(wtrStart), .done(wtrDone), 
+                    .addr(wtrAddr), .data(wtrData), .MOSI(wtrMOSI), .SCK(wtrSCK), .SDA(wtrSDA) );
+                    
+    ReadFromReg rfr(.clk(clk), .reset(reset), .start(rfrStart), .done(rfrDone), 
+                    .addr(rfrAddr), .data(rfrData), .MISO(MISO), .MOSI(rfrMOSI), .SCK(rfrSCK), .SDA(rfrSDA) );
+
+    assign clks_w = clks + 17'd1;
+    
+    //assign VCC = 1'b1;
+    //assign GND = 1'b0;
+    assign RST = reset;
+    assign SCK = (wtrStart == 1'b1) ? wtrSCK :
+                 (rfrStart == 1'b1) ? rfrSCK :
+                 1'b0;
+    assign SDA = (wtrStart == 1'b1) ? wtrSDA :
+                 (rfrStart == 1'b1) ? rfrSDA :
+                 1'b1;
+    assign MOSI = (wtrStart == 1'b1) ? wtrMOSI :
+                  (rfrStart == 1'b1) ? rfrMOSI :
+                     1'b1;
+
+    //initData
+    assign initData[0] = `CommandReg;
+    assign initData[1] = 8'b00001111;
+    assign initData[2] = `TModeReg;
+    assign initData[3] = 8'h80;
+    assign initData[4] = `TPrescalerReg;
+    assign initData[5] = 8'hA9;
+    assign initData[6] = `TReloadRegL;
+    assign initData[7] = 8'hE8;
+    assign initData[8] = `TReloadRegH;
+    assign initData[9] = 8'h03;
+    assign initData[10] = `TxAutoReg;
+    assign initData[11] = 8'b01000000;
+    assign initData[12] = `ModeReg;
+    assign initData[13] = 8'b00111101;
+    assign initData[14] = `RFCfgReg;
+    assign initData[15] = 8'h48;
+
+always @ (*) begin
+  if(clks[12:0] == 13'd0) LED2_w = (LED2 == 10'b1000000000) ? 10'd1 : LED2 << 1;
+  else LED2_w = LED2;
+  LED3_w[1:0] = status;
+end
+    
+always @ (*) begin
+   state_w         = state;
+   initState_w     = initState;
+   reqState_w      = reqState;
+   count_w         = count;
+    
+
+   wtrStart_w      = wtrStart;
+   wtrAddr_w       = wtrAddr;
+   wtrData_w       = wtrData;
+   rfrStart_w      = rfrStart;
+   rfrAddr_w       = rfrAddr;
+    
+    cmdTagState_w   = cmdTagState;
+    cmd_w           = cmd;
+    dlen_w          = dlen;
+    rlen_w          = rlen;
+    status_w        = status;
+    
+    data_w[0]       = data[0];
+    data_w[1]       = data[1];
+    data_w[2]       = data[2];
+    data_w[3]       = data[3];
+    data_w[4]       = data[4];
+    data_w[5]       = data[5];
+    data_w[6]       = data[6];
+    data_w[7]       = data[7];
+    data_w[8]       = data[8];
+    data_w[9]       = data[9];
+    data_w[10]      = data[10];
+    data_w[11]      = data[11];
+    data_w[12]      = data[12];
+    data_w[13]      = data[13];
+    data_w[14]      = data[14];
+    data_w[15]      = data[15];  
+    
+   irqEn_w         = irqEn;
+   waitIRq_w       = waitIRq;
+   lastBits_w      = lastBits;
+   n_w             = n;
+    prevState_w     = prevState;
+    
+    antiState_w     = antiState;
+    checksum_w      = checksum;
+    
+    BTscount_w      = BTscount;
+    BTbcount_w      = BTbcount;
+   BTstate_w       = BTstate;
+    Rx_w            = Rx;
+    Rx1_w           = Rx1;
+    
+    play_w          = play;
+    
+   HEX0_w          = HEX0;
+   HEX1_w          = HEX1;
+   HEX2_w          = HEX2;
+   HEX3_w          = HEX3;
+   HEX4_w          = HEX4;
+   HEX5_w          = HEX5;
+   HEX6_w          = HEX6;
+   HEX7_w          = HEX7;  
+   LED_w           = LED;
+    
+   case(state)
+    `INITIAL: begin
+       case(initState)
+         4'd0: begin
+           if(count != 8'd16) begin
+             wtrAddr_w   = initData[count];
+             wtrData_w   = initData[count + 8'd1];
+             wtrStart_w  = 1'b1;
+             initState_w = 4'd1;
+           end 
+           else begin
+             initState_w = 4'd2;
+              count_w     = 8'd0;
+           end
+         end
+         4'd1: begin  //waiting for WriteToReg done
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              count_w = count + 8'd2;
+              initState_w = 4'd0;
+           end
+         end
+         4'd2: begin  //open antenna
+         rfrAddr_w  = `TxControlReg;
+           rfrStart_w = 1'b1;
+           initState_w = 4'd3;
+         end
+         4'd3: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              initState_w = 4'd4;
+           end
+         end
+         4'd4: begin
+             wtrAddr_w = `TxControlReg;  //antenna on Tx2
+             wtrData_w = (rfrData | 8'h03);  
+             wtrStart_w = 1'b1;
+             initState_w = 4'd5;
+         end
+         4'd5: begin  
+           if(wtrDone == 1'b1) begin
+             wtrStart_w  = 1'b0;
+              initState_w = 4'd10;
+           end
+         end
+         4'd6: begin
+           rfrAddr_w = `TxControlReg;
+            rfrStart_w = 1'b1;
+            initState_w = 4'd7;
+         end
+         4'd7: begin
+           if(rfrDone == 1'b1) begin
+              rfrStart_w = 1'b0;
+              initState_w = 4'd8;
+            end
+         end
+         4'd8: begin
+           wtrAddr_w = `TxControlReg;
+           wtrData_w = (rfrData | 8'h03);   //antenna on Tx2
+           wtrStart_w = 1'b1;
+           initState_w = 4'd9;          
+         end
+         4'd9: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w  = 1'b0;
+              initState_w = 4'd10;          
+            end
+         end
+         4'd10: begin  //Get the firmware version of the chip.
+         rfrAddr_w = `VersionReg;
+           rfrStart_w = 1'b1;
+           initState_w = 4'd11;
+         end
+         4'd11: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              state_w     = `REQUESTTAG;            
+           end
+         end
+       endcase
+     end
+     `COMMANDTAG: begin
+       case(cmdTagState)
+          6'd0: begin
+            case(cmd) 
+               `MFRC522_AUTHENT: begin
+                  irqEn_w = 8'h12;
+                  waitIRq_w = 8'h10;
+                end
+                `MFRC522_TRANSCEIVE: begin
+                  irqEn_w = 8'h77;
+                  waitIRq_w = 8'h30;                  
+                end
+             endcase
+             cmdTagState_w = 6'd1;
+          end
+         6'd1: begin   // interrupt request=> writeToRegister(CommIEnReg, irqEn|0x80)
+           wtrStart_w = 1'b1;
+           wtrAddr_w = `CommIEnReg;
+           wtrData_w = irqEn | 8'h80;
+           cmdTagState_w = 6'd2;
+         end
+         6'd2: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd3;
+           end
+         end
+         6'd3: begin  // Clear all interrupt requests bits=>clearBitMask(CommIrqReg, 0x80)
+           rfrStart_w = 1'b1;
+           rfrAddr_w = `CommIrqReg;
+           cmdTagState_w = 6'd4;
+         end
+         6'd4: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+             cmdTagState_w = 6'd5;
+           end
+         end
+         6'd5: begin
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `CommIrqReg;
+           wtrData_w  = rfrData & (~8'h80);  //clearBitMask
+            cmdTagState_w = 6'd6;
+         end
+         6'd6: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd7;
+           end
+         end
+         6'd7: begin  // FlushBuffer=1, FIFO initialization=> setBitMask(FIFOLevelReg, 0x80); 
+           rfrStart_w = 1'b1;
+           rfrAddr_w  = `FIFOLevelReg;
+           cmdTagState_w = 6'd8;
+         end
+         6'd8: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              cmdTagState_w = 6'd9;
+           end
+         end
+         6'd9: begin
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `FIFOLevelReg;
+           wtrData_w  = rfrData | 8'h80;  
+         cmdTagState_w = 6'd10;        
+         end
+         6'd10: begin  
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd11;
+           end
+         end
+         6'd11: begin  // No action, cancel the current command=>writeToRegister(CommandReg, MFRC622_IDLE)  
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `CommandReg;
+           wtrData_w  = `MFRC522_IDLE;
+           cmdTagState_w = 6'd12;
+         end
+         6'd12: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd14;
+              count_w       = 8'd0;
+           end
+         end
+         6'd14: begin  //writeToRegister(FIFODataReg, data[i]);
+           if(count != dlen) begin
+             wtrStart_w = 1'b1;
+             wtrAddr_w  = `FIFODataReg;
+             wtrData_w  = data[count];
+             cmdTagState_w = 6'd15;
+            end
+            else begin
+              cmdTagState_w = 6'd16;
+              count_w       = 8'd0;
+            end
+         end
+         6'd15: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd14;
+              count_w       = count + 8'd1;
+           end
+         end
+         6'd16: begin  //writeToRegister(CommandReg, cmd);
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `CommandReg;
+           wtrData_w  = cmd ;
+           cmdTagState_w = 6'd17;
+         end
+         6'd17: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd18;
+           end       
+         end
+         6'd18: begin  
+           if( cmd == `MFRC522_TRANSCEIVE) begin  //setBitMask(BitFramingReg, 0x80)
+             rfrStart_w = 1'b1;
+             rfrAddr_w  = `BitFramingReg;
+             cmdTagState_w = 6'd19;
+            end
+            else begin
+              cmdTagState_w = 6'd50;
+              count_w       = 8'd25;
+            end
+         end
+         6'd19: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;          
+              cmdTagState_w = 6'd20;
+           end
+         end
+         6'd20: begin  
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `BitFramingReg;
+           wtrData_w  = rfrData | 8'h80;
+           cmdTagState_w = 6'd21;
+         end
+         6'd21: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+              cmdTagState_w = 6'd50;
+              count_w    = 8'd25;
+           end
+         end
+         6'd50: begin  //wait 1ms
+           if(clks[2:0] == 3'd0) cmdTagState_w = 6'd51;
+         end
+         6'd51: begin
+           if(clks[2:0] == 3'd0) cmdTagState_w = 6'd22;
+         end
+         6'd22: begin
+           rfrStart_w = 1'b1;
+           rfrAddr_w  = `CommIrqReg;
+           cmdTagState_w = 6'd23;
+         end
+         6'd23: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+           cmdTagState_w = 6'd24;
+           count_w    = count - 8'd1;                
+           end
+         end
+         6'd24: begin               
+           if( (count != 8'd0)  && (!(rfrData& 8'h01)) &&  (!(rfrData&waitIRq))  )begin
+             cmdTagState_w = 6'd50;
+           end
+           else begin
+            cmdTagState_w = 6'd25;
+             n_w        = rfrData;              
+           end
+         end
+         6'd25: begin  //clearBitMask(BitFramingReg, 0x80)           
+           rfrStart_w = 1'b1;
+           rfrAddr_w  = `BitFramingReg;
+           cmdTagState_w = 6'd26;           
+         end
+         6'd26: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              cmdTagState_w = 6'd27;
+           end
+         end
+         6'd27: begin
+           wtrStart_w = 1'b1;
+           wtrAddr_w  = `BitFramingReg;
+           wtrData_w  = rfrData & (~8'h80);
+           cmdTagState_w = 6'd28;
+         end
+         6'd28: begin
+           if(wtrDone == 1'b1) begin
+             wtrStart_w = 1'b0;
+             cmdTagState_w = 6'd29;
+           end
+         end
+         6'd29: begin
+           if(count != 8'd0) begin
+             rfrStart_w = 1'b1;
+              rfrAddr_w  = `ErrorReg;
+              cmdTagState_w = 6'd30;
+           end
+           else begin  // Request time out.
+             status_w = `MI_ERR;
+              cmdTagState_w = 6'd0;
+              state_w       = prevState; //
+           end
+         end
+         6'd30: begin   
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              cmdTagState_w = 6'd31;
+           end
+         end
+         6'd31: begin
+           if( !(rfrData & 8'h1B) ) begin
+             cmdTagState_w = 6'd32;
+           end
+           else begin
+             status_w = `MI_ERR;
+              cmdTagState_w = 6'd0;
+              state_w       = prevState;
+           end
+         end
+         6'd32: begin
+           if( n & irqEn & 8'h01) begin
+             status_w = `MI_NOTAGERR;
+              cmdTagState_w = 6'd0;
+              state_w       = prevState;
+           end
+           else begin
+             cmdTagState_w = 6'd33;
+           end
+         end
+         6'd33: begin
+         if(cmd == `MFRC522_TRANSCEIVE) begin
+             rfrStart_w = 1'b1;
+             rfrAddr_w  = `FIFOLevelReg;
+             cmdTagState_w = 6'd34;
+            end
+            else begin
+              status_w = `MI_OK;
+              cmdTagState_w = 6'd0;
+              state_w       = prevState;
+            end
+         end
+         6'd34: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              cmdTagState_w = 6'd35;
+              n_w        = rfrData;
+           end
+         end
+         6'd35: begin
+           rfrStart_w = 1'b1;
+           rfrAddr_w  = `ControlReg;
+           cmdTagState_w = 6'd36;
+         end
+         6'd36: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+             cmdTagState_w = 6'd37;
+             lastBits_w = rfrData & 8'h07;
+           end
+         end
+         6'd37: begin
+           if( (&lastBits) ) begin
+             rlen_w = (( n - 8'd1) << 3) + lastBits;
+           end
+           else begin
+             rlen_w = n << 3;
+           end
+           if( n == 8'd0) begin
+             n_w = 8'd1;
+           end
+           if( n > `MAX_LEN) begin
+             n_w = `MAX_LEN;
+           end
+           count_w    = 8'd0;
+           cmdTagState_w = 6'd38;
+         end
+         6'd38: begin
+           if(count != n ) begin
+             rfrStart_w = 1'b1;
+              rfrAddr_w  = `FIFODataReg;
+              cmdTagState_w = 6'd39;
+           end
+           else begin
+             cmdTagState_w = 6'd40;
+              count_w    = 8'd0;
+           end
+         end
+         6'd39: begin
+           if(rfrDone == 1'b1) begin
+             rfrStart_w = 1'b0;
+              data_w[count] = rfrData;
+              count_w = count + 8'd1;
+              cmdTagState_w = 6'd38;
+           end
+         end
+         6'd40: begin
+           status_w = `MI_OK;
+            cmdTagState_w = 6'd0;
+            state_w       = prevState;
+         end
+       endcase
+     end
+    `REQUESTTAG: begin
+       case(reqState) 
+        6'd0: begin
+          wtrAddr_w = `BitFramingReg;
+          wtrData_w = 8'h07;
+          wtrStart_w = 1'b1;
+          reqState_w = 6'd1;
+        end
+        6'd1: begin
+          if(wtrDone == 1'b1) begin
+            wtrStart_w = 1'b0;
+             reqState_w = 6'd2;
+          end
+        end
+        6'd2: begin
+          data_w[0] = `MF1_REQIDL;
+          cmd_w       = `MFRC522_TRANSCEIVE;
+          dlen_w      = 8'd1;
+          prevState_w = `REQUESTTAG;
+          reqState_w  = 6'd3;           //after commandTag done, it should go to reqState = 3
+          state_w     = `COMMANDTAG;
+          cmdTagState_w = 6'd0;
+        end
+        6'd3: begin
+          if(status == `MI_OK) begin
+            state_w = `ANTICOLLISION;
+          end   
+          else begin
+            reqState_w = 6'd0; // 6'd4 to delay; 6'd0 to restart
+          end
+      end
+      6'd4: begin  // Delay between detecting
+            if(clks[5:0] == 6'd0) reqState_w = 6'd5;
+      end
+      6'd5: begin
+            if(clks[5:0] == 6'd0) reqState_w = 6'd0;
+      end
+       endcase
+     end
+     `ANTICOLLISION: begin
+       case(antiState) 
+        6'd0: begin
+          wtrAddr_w = `BitFramingReg;
+          wtrData_w = 8'h00;
+          wtrStart_w = 1'b1;
+          antiState_w = 6'd1;
+          play_w = 1'd1;
+        end
+        6'd1: begin
+          play_w = 1'd0;
+          if(wtrDone == 1'b1) begin
+            wtrStart_w = 1'b0;
+             antiState_w = 6'd2;
+          end
+        end
+        6'd2: begin
+          data_w[0] = `MF1_ANTICOLL;
+          data_w[1] = 8'h20;
+          cmd_w       = `MFRC522_TRANSCEIVE;
+          dlen_w      = 8'd2;
+          prevState_w = `ANTICOLLISION;
+          antiState_w  = 6'd5;           //after commandTag done, it should go to antiState = 6'd5
+          state_w     = `COMMANDTAG;
+          cmdTagState_w = 6'd0;
+        end
+        6'd5: begin
+            //state_w = `WRITETOBT;
+          state_w = `REQUESTTAG;
+                    reqState_w = 6'd0;
+             antiState_w = 6'd0;
+             
+             case(data[3][7:4])
+               4'd0:  HEX1_w = 7'b1000000;
+               4'd1:  HEX1_w = 7'b1111001;
+               4'd2:  HEX1_w = 7'b0100100;
+               4'd3:  HEX1_w = 7'b0110000;
+               4'd4:  HEX1_w = 7'b0011001;
+               4'd5:  HEX1_w = 7'b0010010;
+               4'd6:  HEX1_w = 7'b0000010;
+               4'd7:  HEX1_w = 7'b1111000;
+               4'd8:  HEX1_w = 7'b0000000;
+               4'd9:  HEX1_w = 7'b0010000;
+                    4'd10: HEX1_w = 7'b0001000;
+                    4'd11: HEX1_w = 7'b0000011;
+                    4'd12: HEX1_w = 7'b1000110;
+                    4'd13: HEX1_w = 7'b0100001;
+                    4'd14: HEX1_w = 7'b0000110;
+                    4'd15: HEX1_w = 7'b0001110;
+               default: HEX1_w = 7'b1111111;
+            endcase
+             case(data[3][3:0])
+               4'd0: HEX0_w = 7'b1000000;
+               4'd1: HEX0_w = 7'b1111001;
+               4'd2: HEX0_w = 7'b0100100;
+               4'd3: HEX0_w = 7'b0110000;
+               4'd4: HEX0_w = 7'b0011001;
+               4'd5: HEX0_w = 7'b0010010;
+               4'd6: HEX0_w = 7'b0000010;
+               4'd7: HEX0_w = 7'b1111000;
+               4'd8: HEX0_w = 7'b0000000;
+               4'd9: HEX0_w = 7'b0010000;
+                    4'd10: HEX0_w = 7'b0001000;
+                    4'd11: HEX0_w = 7'b0000011;
+                    4'd12: HEX0_w = 7'b1000110;
+                    4'd13: HEX0_w = 7'b0100001;
+                    4'd14: HEX0_w = 7'b0000110;
+                    4'd15: HEX0_w = 7'b0001110;
+               default: HEX0_w = 7'b1111111;
+            endcase     
+             case(data[2][7:4])
+               4'd0:  HEX3_w = 7'b1000000;
+               4'd1:  HEX3_w = 7'b1111001;
+               4'd2:  HEX3_w = 7'b0100100;
+               4'd3:  HEX3_w = 7'b0110000;
+               4'd4:  HEX3_w = 7'b0011001;
+               4'd5:  HEX3_w = 7'b0010010;
+               4'd6:  HEX3_w = 7'b0000010;
+               4'd7:  HEX3_w = 7'b1111000;
+               4'd8:  HEX3_w = 7'b0000000;
+               4'd9:  HEX3_w = 7'b0010000;
+                    4'd10:  HEX3_w = 7'b0001000;
+                    4'd11:  HEX3_w = 7'b0000011;
+                    4'd12:  HEX3_w = 7'b1000110;
+                    4'd13:  HEX3_w = 7'b0100001;
+                    4'd14:  HEX3_w = 7'b0000110;
+                    4'd15:  HEX3_w = 7'b0001110;
+               default: HEX3_w = 7'b1111111;
+            endcase
+             case(data[2][3:0])
+               4'd0: HEX2_w = 7'b1000000;
+               4'd1: HEX2_w = 7'b1111001;
+               4'd2: HEX2_w = 7'b0100100;
+               4'd3: HEX2_w = 7'b0110000;
+               4'd4: HEX2_w = 7'b0011001;
+               4'd5: HEX2_w = 7'b0010010;
+               4'd6: HEX2_w = 7'b0000010;
+               4'd7: HEX2_w = 7'b1111000;
+               4'd8: HEX2_w = 7'b0000000;
+               4'd9: HEX2_w = 7'b0010000;
+                    4'd10: HEX2_w = 7'b0001000;
+                    4'd11: HEX2_w = 7'b0000011;
+                    4'd12: HEX2_w = 7'b1000110;
+                    4'd13: HEX2_w = 7'b0100001;
+                    4'd14: HEX2_w = 7'b0000110;
+                    4'd15: HEX2_w = 7'b0001110;
+               default: HEX2_w = 7'b1111111;
+            endcase     
+             case(data[1][7:4])
+               4'd0:  HEX5_w = 7'b1000000;
+               4'd1:  HEX5_w = 7'b1111001;
+               4'd2:  HEX5_w = 7'b0100100;
+               4'd3:  HEX5_w = 7'b0110000;
+               4'd4:  HEX5_w = 7'b0011001;
+               4'd5:  HEX5_w = 7'b0010010;
+               4'd6:  HEX5_w = 7'b0000010;
+               4'd7:  HEX5_w = 7'b1111000;
+               4'd8:  HEX5_w = 7'b0000000;
+               4'd9:  HEX5_w = 7'b0010000;
+                    4'd10: HEX5_w = 7'b0001000;
+                    4'd11: HEX5_w = 7'b0000011;
+                    4'd12: HEX5_w = 7'b1000110;
+                    4'd13: HEX5_w = 7'b0100001;
+                    4'd14: HEX5_w = 7'b0000110;
+                    4'd15: HEX5_w = 7'b0001110;
+               default: HEX5_w = 7'b1111111;
+            endcase
+             case(data[1][3:0])
+               4'd0:  HEX4_w = 7'b1000000;
+               4'd1:  HEX4_w = 7'b1111001;
+               4'd2:  HEX4_w = 7'b0100100;
+               4'd3:  HEX4_w = 7'b0110000;
+               4'd4:  HEX4_w = 7'b0011001;
+               4'd5:  HEX4_w = 7'b0010010;
+               4'd6:  HEX4_w = 7'b0000010;
+               4'd7:  HEX4_w = 7'b1111000;
+               4'd8:  HEX4_w = 7'b0000000;
+               4'd9:  HEX4_w = 7'b0010000;
+                    4'd10: HEX4_w = 7'b0001000;
+                    4'd11: HEX4_w = 7'b0000011;
+                    4'd12: HEX4_w = 7'b1000110;
+                    4'd13: HEX4_w = 7'b0100001;
+                    4'd14: HEX4_w = 7'b0000110;
+                    4'd15: HEX4_w = 7'b0001110;
+               default: HEX4_w = 7'b1111111;
+            endcase 
+             case(data[0][7:4])
+               4'd0:  HEX7_w = 7'b1000000;
+               4'd1:  HEX7_w = 7'b1111001;
+               4'd2:  HEX7_w = 7'b0100100;
+               4'd3:  HEX7_w = 7'b0110000;
+               4'd4:  HEX7_w = 7'b0011001;
+               4'd5:  HEX7_w = 7'b0010010;
+               4'd6:  HEX7_w = 7'b0000010;
+               4'd7:  HEX7_w = 7'b1111000;
+               4'd8:  HEX7_w = 7'b0000000;
+               4'd9:  HEX7_w = 7'b0010000;
+                    4'd10: HEX7_w = 7'b0001000;
+                    4'd11: HEX7_w = 7'b0000011;
+                    4'd12: HEX7_w = 7'b1000110;
+                    4'd13: HEX7_w = 7'b0100001;
+                    4'd14: HEX7_w = 7'b0000110;
+                    4'd15: HEX7_w = 7'b0001110;
+               default: HEX7_w = 7'b1111111;
+            endcase
+             case(data[0][3:0])
+               4'd0:  HEX6_w = 7'b1000000;
+               4'd1:  HEX6_w = 7'b1111001;
+               4'd2:  HEX6_w = 7'b0100100;
+               4'd3:  HEX6_w = 7'b0110000;
+               4'd4:  HEX6_w = 7'b0011001;
+               4'd5:  HEX6_w = 7'b0010010;
+               4'd6:  HEX6_w = 7'b0000010;
+               4'd7:  HEX6_w = 7'b1111000;
+               4'd8:  HEX6_w = 7'b0000000;
+               4'd9:  HEX6_w = 7'b0010000;
+                    4'd10: HEX6_w = 7'b0001000;
+                    4'd11: HEX6_w = 7'b0000011;
+                    4'd12: HEX6_w = 7'b1000110;
+                    4'd13: HEX6_w = 7'b0100001;
+                    4'd14: HEX6_w = 7'b0000110;
+                    4'd15: HEX6_w = 7'b0001110;
+               default: HEX6_w = 7'b1111111;
+                    
+            endcase 
+            LED_w = data[4][7:0];
+            
+        end
+      endcase   
+        end
+     
+    endcase
+end
+
+always @ (posedge clk or negedge reset) begin
+  if(reset == 0) begin
+    clks          <= 17'd0;
+    countdown     <= 4'd9;
+    
+    state         <= `INITIAL;
+    initState     <= 4'd0;
+    reqState      <= 6'd0;
+    count         <= 8'd0;          
+    
+    wtrStart      <= 1'b0;
+    wtrAddr       <= 8'd0;
+    wtrData       <= 8'd0;
+    rfrStart      <= 1'b0;
+    rfrAddr       <= 8'd0;
+    //for parameter of commandTag
+    cmdTagState   <= 6'd0;
+    cmd           <= 8'd0;
+    dlen          <= 8'd0;
+    rlen          <= 8'd0;
+    status        <= `MI_ERR;
+    
+    irqEn         <= 8'd0;
+    waitIRq       <= 8'd0;
+    n             <= 8'd0;
+    lastBits      <= 8'd0;
+    prevState     <= `INITIAL;
+    
+    antiState     <= 6'd0;
+    checksum      <= 8'd0;
+    
+    
+    HEX0          <= 7'h7f;
+    HEX1          <= 7'h7f;
+    HEX2          <= 7'h7f;
+    HEX3          <= 7'h7f;
+    HEX4          <= 7'h7f;
+    HEX5          <= 7'h7f;
+    HEX6          <= 7'h7f;
+    HEX7          <= 7'h7f;
+    LED           <= 8'd0;
+    LED2          <= 10'd1;
+    LED3           <= 8'd0;
+    
+    BTscount      <= 3'd0;
+    BTbcount      <= 3'd0;
+    BTstate       <= 5'd0;
+    Rx            <= 1'd1;
+    Rx1           <= 1'd1;
+    play          <= 1'd0;
+    
+    data[0]          <= 8'd0;
+    data[1]          <= 8'd0;
+    data[2]          <= 8'd0;
+    data[3]          <= 8'd0;
+    data[4]          <= 8'd0;
+    data[5]          <= 8'd0;
+    data[6]          <= 8'd0;
+    data[7]          <= 8'd0;
+    data[8]          <= 8'd0;
+    data[9]          <= 8'd0;
+    data[10]         <= 8'd0;
+    data[11]         <= 8'd0;
+    data[12]         <= 8'd0;
+    data[13]         <= 8'd0;   
+    data[14]         <= 8'd0;
+    data[15]         <= 8'd0;
+  end
+  else begin    
+    clks          <= clks_w;
+    countdown     <= countdown_w;
+    
+    state         <= state_w;
+    initState     <= initState_w;
+    reqState      <= reqState_w;
+    count         <= count_w;    
+
+                  
+    wtrStart      <= wtrStart_w;
+    wtrAddr       <= wtrAddr_w;
+    wtrData       <= wtrData_w;
+    rfrStart      <= rfrStart_w;
+    rfrAddr       <= rfrAddr_w;
+     
+    //parameter for commandTag
+    cmdTagState   <= cmdTagState_w;
+    cmd           <= cmd_w;
+    dlen          <= dlen_w;
+    rlen          <= rlen_w;
+    status        <= status_w;
+    
+    data[0]          <= data_w[0];
+    data[1]          <= data_w[1];
+    data[2]          <= data_w[2];
+    data[3]          <= data_w[3];
+    data[4]          <= data_w[4];
+    data[5]          <= data_w[5];
+    data[6]          <= data_w[6];
+    data[7]          <= data_w[7];
+    data[8]          <= data_w[8];
+    data[9]          <= data_w[9];
+    data[10]         <= data_w[10];
+    data[11]         <= data_w[11];
+    data[12]         <= data_w[12];
+    data[13]         <= data_w[13]; 
+    data[14]         <= data_w[14];
+    data[15]         <= data_w[15];
+    
+    
+    irqEn         <= irqEn_w;
+    waitIRq       <= waitIRq_w;
+    n             <= n_w;
+    lastBits      <= lastBits_w;
+    prevState     <= prevState_w;
+    
+    antiState     <= antiState_w;
+    checksum      <= checksum_w;
+    
+    HEX0          <= HEX0_w;
+    HEX1          <= HEX1_w;
+    HEX2          <= HEX2_w;
+    HEX3          <= HEX3_w;
+    HEX4          <= HEX4_w;
+    HEX5          <= HEX5_w;
+    HEX6          <= HEX6_w;
+    HEX7          <= HEX7_w;
+    LED           <= LED_w;
+    LED2          <= LED2_w;
+    LED3          <= LED3_w;
+    
+    BTstate       <= BTstate_w;
+    BTscount      <= BTscount_w;
+    BTbcount      <= BTbcount_w;
+    Rx            <= Rx_w;
+    Rx1           <= Rx1_w;
+    play          <= play_w;
+  end
+end
+
+endmodule

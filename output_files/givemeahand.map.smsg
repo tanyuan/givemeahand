@@ -1,0 +1,2 @@
+Warning (10273): Verilog HDL warning at Route.v(111): extended using "x" or "z"
+Info (10281): Verilog HDL Declaration information at Route.v(41): object "init" differs only in case from object "INIT" in the same scope
